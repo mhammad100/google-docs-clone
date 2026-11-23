@@ -1,0 +1,120 @@
+@use '../styles/variables' as *;
+
+.page-view {
+  display: flex;
+  justify-content: center;
+  padding: 20px 16px 48px;
+  min-width: fit-content;
+
+  &__paper {
+    position: relative;
+    flex-shrink: 0;
+    background: $color-surface;
+    box-shadow: 0 1px 3px 1px rgba(60, 64, 67, 0.15), 0 1px 2px rgba(60, 64, 67, 0.3);
+    transition: width 0.2s, padding 0.2s;
+  }
+
+  &__content {
+    position: relative;
+    z-index: 1;
+  }
+
+  // Header/footer live inside the top/bottom margin
+  &__margin {
+    position: absolute;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 12px;
+    color: #5f6368;
+
+    &--header {
+      align-items: flex-end;
+      padding-bottom: 12px;
+    }
+
+    &--footer {
+      align-items: flex-start;
+      padding-top: 12px;
+    }
+  }
+
+  &__margin-input {
+    flex: 1;
+    min-width: 0;
+    height: 26px;
+    padding: 0 6px;
+    margin: 0 -7px;
+    border: 1px dashed transparent;
+    border-radius: 3px;
+    background: transparent;
+    font: inherit;
+    color: inherit;
+
+    &::placeholder {
+      color: transparent;
+    }
+
+    &:hover,
+    &:focus {
+      border-color: #c4c7c5;
+
+      &::placeholder {
+        color: #9aa0a6;
+      }
+    }
+
+    &:focus {
+      outline: none;
+      border-color: $color-primary;
+      background: $color-surface;
+    }
+  }
+
+  &__margin-text {
+    flex: 1;
+  }
+
+  &__page-number {
+    white-space: nowrap;
+  }
+
+  // Dashed guide where a printed page would end
+  &__break {
+    position: absolute;
+    left: 0;
+    right: 0;
+    border-top: 1px dashed #c4c7c5;
+    pointer-events: none;
+
+    span {
+      position: absolute;
+      right: -64px;
+      top: -9px;
+      font-size: 11px;
+      color: #80868b;
+    }
+  }
+}
+
+@media print {
+  .page-view {
+    zoom: 1 !important;
+    padding: 0;
+    display: block;
+
+    &__paper {
+      width: auto !important;
+      min-height: 0 !important;
+      padding: 0 !important;
+      box-shadow: none;
+    }
+
+    // The printed page uses @page margin boxes for the header/footer instead
+    &__margin,
+    &__break {
+      display: none;
+    }
+  }
+}

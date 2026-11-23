@@ -1,0 +1,127 @@
+@use '../styles/variables' as *;
+
+.page-setup {
+  width: min(620px, 100%);
+
+  &__body {
+    display: flex;
+    gap: 24px;
+
+    @include mobile {
+      flex-direction: column-reverse;
+    }
+  }
+
+  &__fields {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  &__group {
+    border: none;
+    margin: 0;
+    padding: 0;
+
+    legend {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      padding: 0;
+    }
+
+    & + & {
+      margin-top: 16px;
+    }
+  }
+
+  &__presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  &__margins {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+
+    @include mobile {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  &__hf {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 10px;
+
+    @include mobile {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &__preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-width: 160px;
+    color: $color-muted;
+    font-size: 12px;
+    text-transform: capitalize;
+  }
+
+  .form-error {
+    margin-top: 16px;
+  }
+}
+
+.page-preview {
+  position: relative;
+  background: $color-surface;
+  border: 1px solid $color-border;
+  box-shadow: $shadow-sm;
+  transition: width 0.2s, height 0.2s;
+
+  &__text {
+    position: absolute;
+    background: repeating-linear-gradient(to bottom, #dadce0 0 2px, transparent 2px 7px);
+    transition: all 0.2s;
+  }
+}
+
+.radio,
+.checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-right: 16px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.chip {
+  height: 28px;
+  padding: 0 12px;
+  border: 1px solid $color-border;
+  border-radius: 999px;
+  background: $color-surface;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+
+  &:hover {
+    background: #f1f3f4;
+  }
+
+  &.is-active {
+    border-color: $color-primary;
+    background: $color-primary-soft;
+    color: $color-primary-dark;
+  }
+}

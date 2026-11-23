@@ -1,0 +1,76 @@
+@use '../styles/variables' as *;
+
+.login {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+
+  &__card {
+    width: min(400px, 100%);
+    padding: 32px;
+    border-radius: $radius-lg;
+    background: $color-surface;
+    border: 1px solid $color-border;
+    box-shadow: $shadow-sm;
+    text-align: center;
+
+    @include mobile {
+      padding: 24px 20px;
+    }
+  }
+
+  &__brand {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+
+    h1 {
+      font-size: 24px;
+    }
+  }
+
+  &__logo {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: $color-primary;
+    color: #fff;
+    font-weight: 600;
+    font-size: 20px;
+  }
+
+  &__subtitle {
+    color: $color-muted;
+    margin: 8px 0 24px;
+  }
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    text-align: left;
+    margin-bottom: 12px;
+  }
+
+  &__demo {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid $color-border;
+    font-size: 13px;
+    color: $color-muted;
+
+    p {
+      margin: 0 0 10px;
+    }
+  }
+
+  &__demo-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+  }
+}

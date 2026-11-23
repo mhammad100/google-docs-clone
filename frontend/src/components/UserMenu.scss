@@ -1,0 +1,64 @@
+@use '../styles/variables' as *;
+
+.user-menu {
+  // Override the generic dropdown button: just the avatar with a hover/open ring
+  &__trigger.dropdown__button {
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    justify-content: center;
+    border-radius: 50%;
+
+    &:hover,
+    &.is-open {
+      background: rgba(60, 64, 67, 0.1);
+    }
+
+    &:focus-visible {
+      outline: 2px solid $color-primary;
+      outline-offset: 1px;
+    }
+  }
+
+  .dropdown__panel {
+    width: 280px;
+    padding: 0 0 8px;
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  &__profile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 20px 16px 16px;
+    background: #f0f4f9;
+    text-align: center;
+
+    .avatar {
+      margin-bottom: 6px;
+    }
+  }
+
+  &__name {
+    font-size: 17px;
+    font-weight: 500;
+    color: $color-text;
+  }
+
+  &__email {
+    font-size: 13px;
+    color: $color-muted;
+    overflow-wrap: anywhere;
+  }
+
+  .menu-divider {
+    margin-top: 0;
+  }
+
+  .menu-item {
+    padding-left: 20px;
+    min-height: 40px;
+  }
+}

@@ -1,0 +1,529 @@
+@use '../styles/variables' as *;
+
+$inner-width: 1040px;
+
+.home {
+  padding-bottom: 64px;
+
+  &__inner {
+    max-width: $inner-width;
+    margin: 0 auto;
+    padding: 0 24px;
+
+    @include mobile {
+      padding: 0 16px;
+    }
+  }
+
+  // White band at the top, like Google Docs' "Start a new document"
+  &__start {
+    background: $color-surface;
+    border-bottom: 1px solid $color-border;
+    padding: 28px 0 32px;
+  }
+
+  &__greeting {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+
+    h1 {
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    p {
+      margin: 0;
+      font-size: 14px;
+      color: $color-muted;
+    }
+  }
+
+  &__docs {
+    padding-top: 28px;
+  }
+}
+
+// ---------- New document tiles ----------
+
+.templates {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.template {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  width: 152px;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  &:disabled {
+    cursor: progress;
+    opacity: 0.7;
+  }
+
+  &__page {
+    position: relative;
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: 6px;
+    width: 152px;
+    height: 196px;
+    margin-bottom: 10px;
+    border: 1px solid #dadce0;
+    border-radius: 6px;
+    background: $color-surface;
+    transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+
+    &--import {
+      color: $color-primary;
+      background:
+        repeating-linear-gradient(to bottom, transparent 0 22px, #f1f3f4 22px 24px) 20px 28px / calc(100% - 40px) 60% no-repeat,
+        $color-surface;
+    }
+  }
+
+  &:hover:not(:disabled) &__page,
+  &:focus-visible &__page {
+    border-color: $color-primary;
+    box-shadow: 0 2px 8px rgba(26, 115, 232, 0.18);
+    transform: translateY(-1px);
+  }
+
+  &:focus-visible {
+    outline: none;
+  }
+
+  // Multi-color plus, a nod to the Docs "Blank" tile
+  &__plus {
+    display: grid;
+    place-items: center;
+    color: transparent;
+    background: conic-gradient(from 45deg, #ea4335 0 25%, #4285f4 0 50%, #34a853 0 75%, #fbbc04 0);
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z'/%3E%3C/svg%3E") center / 64px no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z'/%3E%3C/svg%3E") center / 64px no-repeat;
+    width: 72px;
+    height: 72px;
+  }
+
+  &__formats {
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: $color-primary-soft;
+    font-size: 12px;
+    font-weight: 500;
+    color: $color-primary-dark;
+  }
+
+  &__label {
+    font-size: 14px;
+    font-weight: 500;
+    color: $color-text;
+  }
+
+  &__hint {
+    font-size: 12px;
+    color: $color-muted;
+  }
+
+  @include mobile {
+    width: calc(50% - 12px);
+
+    &__page {
+      width: 100%;
+      height: 150px;
+    }
+  }
+}
+
+// ---------- Toolbar: tabs, search, sort ----------
+
+.docs-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 16px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+
+  &__right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    justify-content: flex-end;
+    min-width: 260px;
+
+    @include mobile {
+      min-width: 100%;
+    }
+  }
+}
+
+.tabs {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 10px;
+  background: #eaedf1;
+
+  &__tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 32px;
+    padding: 0 12px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    color: $color-muted;
+    cursor: pointer;
+    white-space: nowrap;
+
+    &:hover {
+      color: $color-text;
+    }
+
+    &.is-active {
+      background: $color-surface;
+      color: $color-text;
+      box-shadow: $shadow-sm, 0 0 0 1px rgba(0, 0, 0, 0.04);
+    }
+
+    &:focus-visible {
+      outline: 2px solid $color-primary;
+    }
+  }
+
+  &__count {
+    min-width: 20px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: rgba(60, 64, 67, 0.08);
+    font-size: 11px;
+    line-height: 18px;
+    text-align: center;
+  }
+
+  @include mobile {
+    width: 100%;
+
+    &__tab {
+      flex: 1;
+      justify-content: center;
+      padding: 0 6px;
+    }
+  }
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  max-width: 320px;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid $color-border;
+  border-radius: 999px;
+  background: $color-surface;
+  color: $color-muted;
+  transition: border-color 0.15s, box-shadow 0.15s;
+
+  &:focus-within {
+    border-color: $color-primary;
+    box-shadow: 0 0 0 3px $color-primary-soft;
+  }
+
+  input {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    font: inherit;
+    font-size: 14px;
+    color: $color-text;
+  }
+
+  @include mobile {
+    max-width: none;
+  }
+}
+
+.sort-button.dropdown__button {
+  height: 36px;
+  padding: 0 10px 0 12px;
+  gap: 6px;
+  border-radius: 999px;
+  font-weight: 500;
+  color: $color-text;
+
+  .dropdown__caret {
+    margin: 0;
+  }
+
+  @include mobile {
+    .sort-label {
+      display: none;
+    }
+  }
+}
+
+// ---------- Documents table ----------
+
+$columns: minmax(0, 1fr) 180px 120px 48px;
+
+.doc-table {
+  background: $color-surface;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+
+  &__head {
+    display: grid;
+    grid-template-columns: $columns;
+    align-items: center;
+    height: 40px;
+    padding: 0 8px 0 20px;
+    border-bottom: 1px solid $color-border;
+    font-size: 12px;
+    font-weight: 500;
+    color: $color-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+
+    @include mobile {
+      span:nth-child(2),
+      span:nth-child(3) {
+        visibility: hidden;
+      }
+    }
+  }
+
+  &__body {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+.doc-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 48px;
+  align-items: center;
+  padding-right: 8px;
+  border-bottom: 1px solid #eef0f3;
+  transition: background 0.12s;
+
+  &:last-child {
+    border-bottom: none;
+    border-radius: 0 0 $radius-lg $radius-lg;
+  }
+
+  &:hover {
+    background: #f6f8fc;
+  }
+
+  &__link {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 180px 120px;
+    align-items: center;
+    min-height: 64px;
+    padding: 10px 0 10px 20px;
+    color: inherit;
+    text-decoration: none;
+    border-radius: $radius-lg;
+
+    &:focus-visible {
+      outline: 2px solid $color-primary;
+      outline-offset: -2px;
+    }
+
+    @include mobile {
+      grid-template-columns: minmax(0, 1fr);
+      padding-left: 14px;
+    }
+  }
+
+  &__name {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+  }
+
+  &__icon {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    background: $color-primary-soft;
+    color: $color-primary;
+
+    &--shared {
+      background: $color-shared-soft;
+      color: $color-shared;
+    }
+  }
+
+  &__text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  &__title {
+    font-size: 15px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__sharing {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    color: $color-muted;
+  }
+
+  &__mobile-meta {
+    display: none;
+
+    @include mobile {
+      display: inline;
+    }
+  }
+
+  &__owner,
+  &__edited {
+    font-size: 13px;
+    color: #444746;
+
+    @include mobile {
+      display: none;
+    }
+  }
+
+  &__owner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+
+    span:last-child {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  &__menu {
+    justify-self: center;
+  }
+
+  // Loading placeholders
+  &--skeleton {
+    display: flex;
+    gap: 14px;
+    min-height: 64px;
+    padding: 0 20px;
+  }
+}
+
+.icon-button.dropdown__button {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  justify-content: center;
+  border-radius: 50%;
+  color: #444746;
+}
+
+.skeleton {
+  border-radius: 6px;
+  background: linear-gradient(90deg, #eef0f3 25%, #f6f7f9 50%, #eef0f3 75%) 0 0 / 200% 100%;
+  animation: shimmer 1.2s infinite linear;
+
+  &--icon {
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+  }
+
+  &--text {
+    width: min(320px, 60%);
+    height: 14px;
+  }
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+// ---------- Empty / error states ----------
+
+.state-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 48px 24px;
+  text-align: center;
+
+  &__icon {
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    margin-bottom: 8px;
+    border-radius: 50%;
+    background: #f1f3f4;
+    color: #80868b;
+  }
+
+  h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 500;
+  }
+
+  p {
+    max-width: 380px;
+    margin: 0 0 12px;
+    font-size: 14px;
+    color: $color-muted;
+  }
+
+  &--error {
+    border: 1px solid #f4c7c3;
+    border-radius: $radius-lg;
+    background: $color-danger-soft;
+
+    p {
+      color: $color-danger;
+      margin: 0 0 8px;
+    }
+  }
+}

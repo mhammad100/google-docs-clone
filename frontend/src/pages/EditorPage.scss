@@ -1,0 +1,155 @@
+@use '../styles/variables' as *;
+
+// Full-height app layout: top bar + toolbar stay put, the page canvas scrolls
+.docs-editor {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  background: #f9fbfd;
+}
+
+.docs-topbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px 4px 12px;
+
+  &__logo {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    color: $color-primary;
+
+    &:hover {
+      background: rgba(60, 64, 67, 0.08);
+    }
+  }
+
+  &__main {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__title-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  &__title {
+    max-width: 100%;
+    min-width: 0;
+    height: 28px;
+    padding: 0 6px;
+    margin-left: -6px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    background: transparent;
+    font: inherit;
+    font-size: 18px;
+    color: $color-text;
+    text-overflow: ellipsis;
+
+    &:hover:not([readonly]) {
+      border-color: #c4c7c5;
+    }
+
+    &:focus {
+      outline: none;
+      border-color: $color-primary;
+      border-width: 2px;
+    }
+  }
+
+  &__status {
+    flex-shrink: 0;
+    font-size: 12px;
+    color: $color-muted;
+
+    &--saving,
+    &--unsaved {
+      color: $color-warning;
+    }
+
+    &--error {
+      color: $color-danger;
+    }
+  }
+
+  &__right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+
+  &__share {
+    height: 40px;
+    padding: 0 20px;
+    border-radius: 20px;
+    background: #c2e7ff;
+    color: #001d35;
+
+    &:hover:not(:disabled) {
+      background: #b3d7ef;
+    }
+  }
+
+  &__shared-by {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: $color-muted;
+  }
+
+  @include mobile {
+    padding: 6px 8px 2px 4px;
+
+    &__status,
+    &__shared-by {
+      display: none;
+    }
+
+    &__share {
+      padding: 0 12px;
+    }
+  }
+}
+
+.docs-canvas {
+  flex: 1;
+  overflow: auto;
+  margin-top: 8px;
+  border-top: 1px solid #e3e6ea;
+}
+
+@media print {
+  body {
+    background: #fff;
+  }
+
+  .docs-topbar,
+  .editor-toolbar,
+  .toasts,
+  .ce-toolbar,
+  .ce-inline-toolbar {
+    display: none !important;
+  }
+
+  .docs-editor {
+    height: auto;
+    background: #fff;
+  }
+
+  .docs-canvas {
+    overflow: visible;
+    margin: 0;
+    border: none;
+  }
+}

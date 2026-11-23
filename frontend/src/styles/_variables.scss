@@ -1,0 +1,34 @@
+// Colors
+$color-bg: #f6f7f9;
+$color-surface: #ffffff;
+$color-border: #e3e6ea;
+$color-text: #1f2328;
+$color-muted: #667080;
+$color-primary: #1a73e8;
+$color-primary-dark: #1558b0;
+$color-primary-soft: #e8f0fe;
+$color-danger: #d93025;
+$color-danger-soft: #fce8e6;
+$color-success: #188038;
+$color-success-soft: #e6f4ea;
+$color-warning: #b06000;
+$color-shared: #8430ce;
+$color-shared-soft: #f3e8fd;
+
+// Shape & spacing
+$radius: 8px;
+$radius-lg: 12px;
+$shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06);
+$shadow-md: 0 8px 24px rgba(16, 24, 40, 0.12);
+$header-height: 56px;
+$content-width: 880px;
+
+$font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+$bp-mobile: 640px;
+
+@mixin mobile {
+  @media (max-width: $bp-mobile) {
+    @content;
+  }
+}

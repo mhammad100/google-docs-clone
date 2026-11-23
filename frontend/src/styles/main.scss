@@ -1,0 +1,244 @@
+@use 'variables' as *;
+@use 'dialog';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: $font-sans;
+  font-size: 15px;
+  line-height: 1.5;
+  color: $color-text;
+  background: $color-bg;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  line-height: 1.25;
+}
+
+a {
+  color: $color-primary;
+}
+
+code,
+kbd {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85em;
+  background: #eef0f3;
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+
+.page {
+  max-width: $content-width;
+  margin: 0 auto;
+  padding: 32px 16px 64px;
+}
+
+.page-message {
+  text-align: center;
+  padding-top: 96px;
+  color: $color-muted;
+
+  h1 {
+    color: $color-text;
+    margin-bottom: 8px;
+  }
+
+  .btn {
+    margin-top: 16px;
+  }
+}
+
+// Buttons
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 16px;
+  border-radius: $radius;
+  border: 1px solid transparent;
+  font: inherit;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $color-primary;
+    outline-offset: 2px;
+  }
+
+  &--primary {
+    background: $color-primary;
+    color: #fff;
+
+    &:hover:not(:disabled) {
+      background: $color-primary-dark;
+    }
+  }
+
+  &--secondary {
+    background: $color-surface;
+    border-color: $color-border;
+    color: $color-text;
+
+    &:hover:not(:disabled) {
+      background: #f1f3f4;
+    }
+  }
+
+  &--ghost {
+    background: transparent;
+    color: $color-muted;
+
+    &:hover:not(:disabled) {
+      background: #eef0f3;
+      color: $color-text;
+    }
+  }
+
+  &--danger {
+    color: $color-danger;
+
+    &:hover:not(:disabled) {
+      background: $color-danger-soft;
+      color: $color-danger;
+    }
+  }
+
+  &--destructive {
+    background: $color-danger;
+    color: #fff;
+
+    &:hover:not(:disabled) {
+      background: #b3261e;
+    }
+  }
+
+  &--link {
+    background: none;
+    border: none;
+    color: $color-primary;
+    padding: 0 4px;
+    height: auto;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  &--block {
+    width: 100%;
+  }
+}
+
+// Form controls
+.input {
+  height: 38px;
+  width: 100%;
+  padding: 0 12px;
+  border: 1px solid $color-border;
+  border-radius: $radius;
+  font: inherit;
+  color: $color-text;
+  background: $color-surface;
+
+  &:focus {
+    outline: none;
+    border-color: $color-primary;
+    box-shadow: 0 0 0 3px $color-primary-soft;
+  }
+
+  &--error {
+    border-color: $color-danger;
+  }
+
+  &--compact {
+    height: 32px;
+    width: auto;
+    padding: 0 8px;
+    font-size: 13px;
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  &__label {
+    font-size: 13px;
+    font-weight: 500;
+  }
+}
+
+.field-error {
+  color: $color-danger;
+  font-size: 13px;
+  margin: 4px 0 0;
+}
+
+.form-error,
+.alert--error {
+  background: $color-danger-soft;
+  color: $color-danger;
+  border-radius: $radius;
+  padding: 10px 12px;
+  font-size: 14px;
+  margin: 0;
+}
+
+.alert {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 16px 0;
+}
+
+// Role badges
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+
+  &--owner {
+    background: $color-primary-soft;
+    color: $color-primary-dark;
+  }
+
+  &--editor {
+    background: $color-shared-soft;
+    color: $color-shared;
+  }
+
+  &--viewer {
+    background: #eef0f3;
+    color: $color-muted;
+  }
+}
