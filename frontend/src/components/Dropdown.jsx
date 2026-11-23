@@ -9,7 +9,7 @@ export const keepSelection = (e) => e.preventDefault();
  * Button that opens a popover. `children` is a render function receiving `close`.
  * onOpen can return false to cancel opening (e.g. when nothing is selected).
  */
-const Dropdown = ({ label, title, className = '', buttonClassName = '', caret = true, align = 'left', disabled, onOpen, children }) => {
+const Dropdown = ({ label, title, tooltip, ariaLabel, className = '', buttonClassName = '', caret = true, align = 'left', disabled, onOpen, children }) => {
   const [open, setOpen] = useState(false);
   const rootRef = useRef(null);
 
@@ -39,6 +39,8 @@ const Dropdown = ({ label, title, className = '', buttonClassName = '', caret = 
         onMouseDown={keepSelection}
         onClick={toggle}
         title={title}
+        data-tooltip={tooltip}
+        aria-label={ariaLabel}
         aria-haspopup="menu"
         aria-expanded={open}
         disabled={disabled}

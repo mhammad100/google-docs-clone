@@ -256,3 +256,36 @@ describe('change password', () => {
     expect(res.status).toBe(401);
   });
 });
+
+describe('PDF export', () => {
+  const binary = (res, callback) => {
+    const chunks = [];
+    res.on('data', (chunk) => chunks.push(chunk));
+    res.on('end', () => callback(null, Buffer.concat(chunks)));
+  };
+
+  const exportAs = (token, id) => {
+    const req = request(app).get(`/api/documents/${id}/export/pdf`).buffer(true).parse(binary);
+    return token ? req.set(auth(token)) : req;
+  };
+
+  it('downloads a PDF for the owner and for people it is shared with, but not for strangers', async () => {
+    const { body } = await request(app).get('/api/documents').set(auth(alice));
+    const docId = body.data.owned.find((d) => d.title === 'Project kickoff notes').id;
+
+    const owner = await exportAs(alice, docId);
+    expect(owner.status).toBe(200);
+    expect(owner.headers['content-type']).toBe('application/pdf');
+    expect(owner.headers['content-disposition']).toContain('filename="Project kickoff notes.pdf"');
+    expect(owner.body.subarray(0, 5).toString()).toBe('%PDF-');
+
+    // Bob has edit access from the seed data
+    expect((await exportAs(bob, docId)).status).toBe(200);
+
+    const stranger = await exportAs(carol, docId);
+    expect(stranger.status).toBe(404);
+    expect(JSON.parse(stranger.body.toString()).error.code).toBe('NOT_FOUND');
+
+    expect((await exportAs(null, docId)).status).toBe(401);
+  });
+});

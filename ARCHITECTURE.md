@@ -35,6 +35,20 @@
 - **Print** uses a generated `@page` rule for the size and margins. CSS page-margin boxes (`@top-center`, `@bottom-right` with `counter(page)`) repeat the header, footer and page numbers on every printed page.
 - I chose this over true on-screen pagination, which would mean measuring and splitting blocks across pages. That's a large, fragile feature, and print gives exact pages where it matters.
 
+**PDF export on the server with pdfmake.**
+- I chose **pdfmake** over the alternatives:
+  - Browser print-to-PDF depends on the user's browser and dialog.
+  - Client-side html2canvas produces images, so text isn't selectable.
+  - Headless Chrome is heavy and awkward on serverless.
+- pdfmake is pure JavaScript and runs inside the existing Vercel function. It produces real text with working links.
+- `export.service` maps the stored Editor.js blocks straight to pdfmake content:
+  - headings, nested and ordered lists, checklists, quotes and dividers
+  - inline bold, italic, underline, strikethrough, highlight, code and links
+- Page setup maps to `pageSize`, `pageMargins` and per-page header/footer callbacks, which also give real "Page X of Y" numbers.
+- Content is sanitized again before conversion. The definition contains only text (no images or file paths), so pdfmake never reads files or the network.
+- I use **pdfmake 0.2.x** on purpose: it's CommonJS throughout and embeds the Roboto font in JavaScript, so there are no font files to deploy. pdfmake 0.3 depends on ESM-only `fontkit`, which crashes on Vercel (see below).
+- The editor saves the latest content straight from Editor.js before exporting. Editor.js debounces its change event, so without this the newest keystrokes could be missing from the PDF.
+
 **Sanitize on the server, not only in the editor.**
 - The API is the trust boundary. A client could send any JSON, so:
   - The validator rejects unknown block types.
@@ -60,6 +74,11 @@
 - A failed save keeps the pending content and retries on the next change or ⌘S.
 - Unsaved changes are flushed on in-app navigation, and `beforeunload` warns before a hard close.
 
+**Serverless constraint: CommonJS dependencies only.**
+- Vercel's Node runtime can't `require()` ES-module-only packages, even though Node 22.12+/24 can locally. The first deploy crashed with `ERR_REQUIRE_ESM`: `sanitize-html` 2.18 depends on ESM-only `htmlparser2` 10+.
+- I pinned `sanitize-html@2.17.0` (CommonJS `htmlparser2@8`), `pdfmake@0.2.23` and `marked@15`.
+- `scripts/verify-serverless.js` loads the whole API with `--no-experimental-require-module` and exercises the sanitizer, markdown import, the Postgres driver and PDF rendering. It runs inside `npm test`, so a regression fails locally instead of in production.
+
 **Deployment shape.**
 - The Express app is exported from `api/index.js`, so it runs unchanged on Vercel serverless or as a normal Node server (`src/server.js`).
 - The Knex pool is kept small (`max: 5`) because of serverless concurrency.
@@ -71,6 +90,7 @@
   - Full collaboration would need a CRDT (Yjs) over WebSockets.
 - **On-screen pages are guides, not hard breaks.** A block can straddle a page guide on screen, and the screen header/footer appear once (first and last page). Printed output is truly paginated.
 - **Page margin boxes for the printed header/footer need Chromium 131+.** Other browsers still print the right size and margins, just without the header/footer.
+- **PDF fonts:** the bundled Roboto covers Latin, Greek and Cyrillic. Emoji, symbols like ✓, and CJK text show as empty boxes. Adding a Noto font family would fix that, at the cost of a larger bundle.
 - **Import creates a new document only.** "Import into the current document" would reuse the same parser.
 - **No pagination** on the document list. Fine for this scope, and the list query is indexed (`owner_id, updated_at`).
 - **Tests are backend-focused** (API integration plus parser/sanitizer units). Next I'd add an end-to-end Playwright test for login → share → open as viewer.

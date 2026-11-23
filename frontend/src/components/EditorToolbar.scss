@@ -121,3 +121,40 @@ $toolbar-bg: #edf2fa;
     font-size: 14px;
   }
 }
+
+// Hover tooltips for toolbar controls (label + shortcut)
+.editor-toolbar [data-tooltip] {
+  position: relative;
+
+  &::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 50%;
+    z-index: 60;
+    padding: 5px 8px;
+    border-radius: 4px;
+    background: #3c4043;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.2;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate(-50%, -2px);
+    transition: opacity 0.12s, transform 0.12s;
+  }
+
+  &:hover::after,
+  &:focus-visible::after {
+    opacity: 1;
+    transform: translate(-50%, 0);
+    transition-delay: 0.35s;
+  }
+
+  &:disabled::after,
+  &.is-open::after {
+    display: none;
+  }
+}

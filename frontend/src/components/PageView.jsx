@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { buildPrintCss, pageDimensions, PX_PER_INCH } from '../editor/pageSettings';
 import './PageView.scss';
 
@@ -44,7 +44,7 @@ const MarginField = ({ kind, value, canEdit, inputRef, style, extra, onSave }) =
  * On screen the text flows continuously with page-break guides; printing (or Save as PDF)
  * produces real pages with the header/footer on each one.
  */
-const PageView = ({ settings, zoom, canEdit, headerRef, footerRef, onSettingsChange, onEmptyAreaClick, children }) => {
+const PageView = ({ settings, zoom, canEdit, headerRef, footerRef, onSettingsChange, onEmptyAreaClick, onPageCountChange, children }) => {
   const contentRef = useRef(null);
   const [contentHeight, setContentHeight] = useState(0);
 
@@ -61,6 +61,11 @@ const PageView = ({ settings, zoom, canEdit, headerRef, footerRef, onSettingsCha
   }, []);
 
   const pageCount = Math.max(1, Math.ceil((contentHeight + m.top + m.bottom) / height));
+
+  // Lets the status bar show the page count
+  useEffect(() => {
+    onPageCountChange?.(pageCount);
+  }, [pageCount, onPageCountChange]);
   const save = (key) => (value) => onSettingsChange({ ...settings, [key]: value });
 
   return (

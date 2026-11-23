@@ -242,3 +242,246 @@ kbd {
     color: $color-muted;
   }
 }
+
+// ---------- Form controls ----------
+
+:root {
+  accent-color: $color-primary;
+}
+
+$chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23444746' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+
+// Native select with a consistent chevron
+select.input {
+  appearance: none;
+  padding-right: 34px;
+  background: $chevron no-repeat right 8px center / 20px, $color-surface;
+  cursor: pointer;
+
+  &.input--compact {
+    padding-right: 28px;
+    background-position: right 4px center;
+  }
+
+  // Borderless until hovered, for in-list controls
+  &.input--ghost {
+    border-color: transparent;
+    background-color: transparent;
+    font-weight: 500;
+    color: #444746;
+
+    &:hover {
+      background-color: #f1f3f4;
+    }
+
+    &:focus {
+      border-color: $color-primary;
+      background-color: $color-surface;
+    }
+  }
+}
+
+// Input with a leading icon
+.input-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+
+  > .icon {
+    position: absolute;
+    left: 11px;
+    color: #80868b;
+    pointer-events: none;
+  }
+
+  .input {
+    padding-left: 38px;
+  }
+}
+
+// Number input with a unit ("in") at the end
+.input-affix {
+  display: flex;
+  align-items: center;
+  height: 38px;
+  border: 1px solid $color-border;
+  border-radius: $radius;
+  background: $color-surface;
+
+  &:focus-within {
+    border-color: $color-primary;
+    box-shadow: 0 0 0 3px $color-primary-soft;
+  }
+
+  input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    padding: 0 0 0 12px;
+    border: none;
+    outline: none;
+    background: transparent;
+    font: inherit;
+    color: $color-text;
+  }
+
+  &__suffix {
+    padding: 0 12px 0 4px;
+    font-size: 13px;
+    color: $color-muted;
+  }
+}
+
+// Toggle switch: <label class="switch"><input type="checkbox" role="switch" /><span class="switch__track" />Label</label>
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  cursor: pointer;
+
+  input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  &__track {
+    position: relative;
+    flex-shrink: 0;
+    width: 36px;
+    height: 20px;
+    border-radius: 999px;
+    background: #c4c7c5;
+    transition: background 0.15s;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+      transition: transform 0.15s;
+    }
+  }
+
+  input:checked + &__track {
+    background: $color-primary;
+
+    &::after {
+      transform: translateX(16px);
+    }
+  }
+
+  input:focus-visible + &__track {
+    outline: 2px solid $color-primary;
+    outline-offset: 2px;
+  }
+}
+
+// Selectable option cards (radio buttons styled as tiles)
+.option-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px;
+}
+
+.option-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid $color-border;
+  border-radius: 10px;
+  background: $color-surface;
+  font-size: 14px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+
+  input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  &:hover {
+    border-color: #b9bec5;
+  }
+
+  &.is-selected {
+    border-color: $color-primary;
+    background: $color-primary-soft;
+    color: $color-primary-dark;
+    font-weight: 500;
+  }
+
+  &:focus-within {
+    outline: 2px solid $color-primary;
+    outline-offset: 1px;
+  }
+}
+
+// Round icon-only button
+.icon-btn {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: #444746;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: #f1f3f4;
+  }
+
+  &--danger:hover:not(:disabled) {
+    background: $color-danger-soft;
+    color: $color-danger;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $color-primary;
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+}
+
+// ---------- Loading placeholders ----------
+
+.skeleton {
+  border-radius: 6px;
+  background: linear-gradient(90deg, #eef0f3 25%, #f6f7f9 50%, #eef0f3 75%) 0 0 / 200% 100%;
+  animation: shimmer 1.2s infinite linear;
+
+  &--icon {
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+  }
+
+  &--text {
+    width: min(320px, 60%);
+    height: 14px;
+  }
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}

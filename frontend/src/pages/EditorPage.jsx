@@ -4,8 +4,10 @@ import { useDispatch } from 'react-redux';
 import { createDocument, deleteDocument, getDocument, updateDocument } from '../api/documents.api';
 import { showToast } from '../store/toastSlice';
 import { useFileImport } from '../hooks/useFileImport';
+import { usePdfExport } from '../hooks/usePdfExport';
 import { useEditorCommands } from '../editor/useEditorCommands';
-import { withDefaults } from '../editor/pageSettings';
+import { PAGE_SIZES, withDefaults } from '../editor/pageSettings';
+import { documentStats } from '../editor/stats';
 import DocumentEditor from '../components/DocumentEditor';
 import EditorMenuBar from '../components/EditorMenuBar';
 import EditorToolbar from '../components/EditorToolbar';
@@ -14,18 +16,14 @@ import PageSetupDialog from '../components/PageSetupDialog';
 import ShareDialog from '../components/ShareDialog';
 import Icon from '../components/Icon';
 import UserMenu from '../components/UserMenu';
+import SaveStatus from '../components/SaveStatus';
+import Avatar from '../components/Avatar';
+import ConfirmDialog from '../components/ConfirmDialog';
 import { ROLE_LABELS } from '../utils/format';
 import './EditorPage.scss';
 
 const AUTOSAVE_DELAY_MS = 800;
 const ZOOM_STORAGE_KEY = 'docs.zoom';
-
-const STATUS_LABELS = {
-  saved: 'All changes saved',
-  unsaved: 'Unsaved changes',
-  saving: 'Saving…',
-  error: 'Could not save',
-};
 
 // Zoom is a per-viewer preference, so it lives in localStorage rather than the document
 const loadZoom = () => {
@@ -41,6 +39,7 @@ const EditorPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { openPicker, fileInput } = useFileImport();
+  const { exportPdf } = usePdfExport();
 
   const [doc, setDoc] = useState(null);
   const [loadError, setLoadError] = useState(null);
@@ -48,7 +47,10 @@ const EditorPage = () => {
   const [status, setStatus] = useState('saved');
   const [shareOpen, setShareOpen] = useState(false);
   const [pageSetupOpen, setPageSetupOpen] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [zoom, setZoom] = useState(loadZoom);
+  const [stats, setStats] = useState({ words: 0, characters: 0 });
+  const [pageCount, setPageCount] = useState(1);
 
   // Autosave state lives in refs so the debounced save always sees the latest content
   const pendingContent = useRef(null);
@@ -75,6 +77,7 @@ const EditorPage = () => {
       }
       setDoc({ ...res.data, settings: withDefaults(res.data.settings) });
       setTitle(res.data.title);
+      setStats(documentStats(res.data.content));
     })();
   }, [id]);
 
@@ -110,6 +113,7 @@ const EditorPage = () => {
 
   const handleContentChange = (content) => {
     pendingContent.current = content;
+    setStats(documentStats(content));
     setStatus('unsaved');
     clearTimeout(timer.current);
     timer.current = setTimeout(saveContent, AUTOSAVE_DELAY_MS);
@@ -224,20 +228,44 @@ const EditorPage = () => {
     share: () => setShareOpen(true),
     pageSetup: () => setPageSetupOpen(true),
     print: () => window.print(),
-    deleteDocument: async () => {
-      if (!window.confirm(`Delete "${doc.title}"? This also removes access for everyone it is shared with.`)) return;
-      const res = await deleteDocument(id);
-      if (res.error) {
-        dispatch(showToast({ type: 'error', message: res.message }));
-        return;
-      }
-      pendingContent.current = null;
-      dispatch(showToast({ type: 'success', message: res.message }));
-      navigate('/');
-    },
+    downloadPdf: () => exportPdf(id, { beforeExport: canEdit ? saveLatest : undefined }),
+    deleteDocument: () => setConfirmDeleteOpen(true),
     editHeader: () => focusField(headerRef),
     editFooter: () => focusField(footerRef),
     togglePageNumbers: () => saveSettings({ ...doc.settings, showPageNumbers: !doc.settings.showPageNumbers }),
+  };
+
+  // Before exporting: take the latest content straight from the editor (its change event is
+  // debounced, so the newest keystrokes may not have reached us yet), then wait for it to save.
+  const saveLatest = async () => {
+    if (editorRef.current) {
+      clearTimeout(timer.current);
+      pendingContent.current = await editorRef.current.save();
+    }
+    await flushSaves();
+  };
+
+  // Waits until every pending edit is saved. Gives up after ~10s.
+  const flushSaves = async () => {
+    for (let attempt = 0; attempt < 100 && (pendingContent.current || saving.current); attempt += 1) {
+      if (pendingContent.current && !saving.current) await saveContent();
+      else await new Promise((resolve) => setTimeout(resolve, 100));
+      if (pendingContent.current && !saving.current && attempt > 3) break; // save keeps failing
+    }
+    if (pendingContent.current) {
+      dispatch(showToast({ type: 'error', message: 'Latest changes are not saved yet, so the PDF may be out of date' }));
+    }
+  };
+
+  const performDelete = async () => {
+    const res = await deleteDocument(id);
+    if (res.error) {
+      dispatch(showToast({ type: 'error', message: res.message }));
+      return;
+    }
+    pendingContent.current = null; // nothing left to save
+    dispatch(showToast({ type: 'success', message: `"${doc.title}" was deleted` }));
+    navigate('/');
   };
 
   // ---------- Render ----------
@@ -277,9 +305,12 @@ const EditorPage = () => {
               aria-label="Document title"
             />
             {canEdit ? (
-              <span className={`docs-topbar__status docs-topbar__status--${status}`}>{STATUS_LABELS[status]}</span>
+              <SaveStatus status={status} onRetry={saveContent} />
             ) : (
-              <span className="badge badge--viewer">{ROLE_LABELS.viewer}</span>
+              <span className="view-only-chip">
+                <Icon name="eye" size={16} />
+                View only
+              </span>
             )}
           </div>
           <EditorMenuBar
@@ -299,9 +330,12 @@ const EditorPage = () => {
               Share
             </button>
           ) : (
-            <span className="docs-topbar__shared-by">
-              Shared by {doc.owner.name}
-              {doc.role === 'editor' && <span className="badge badge--editor">{ROLE_LABELS.editor}</span>}
+            <span className="docs-topbar__shared-by" title={`Owned by ${doc.owner.name} (${doc.owner.email})`}>
+              <Avatar name={doc.owner.name} email={doc.owner.email} size={24} />
+              <span>
+                Shared by <strong>{doc.owner.name.split(' ')[0]}</strong>
+              </span>
+              <span className={`badge badge--${doc.role}`}>{ROLE_LABELS[doc.role]}</span>
             </span>
           )}
           <UserMenu />
@@ -329,6 +363,7 @@ const EditorPage = () => {
           footerRef={footerRef}
           onSettingsChange={saveSettings}
           onEmptyAreaClick={() => editorRef.current?.caret.setToLastBlock('end')}
+          onPageCountChange={setPageCount}
         >
           <DocumentEditor
             key={doc.id}
@@ -340,10 +375,37 @@ const EditorPage = () => {
         </PageView>
       </div>
 
+      <footer className="docs-statusbar" aria-label="Document information">
+        <span>
+          {stats.words.toLocaleString()} {stats.words === 1 ? 'word' : 'words'}
+        </span>
+        <span className="docs-statusbar__muted">{stats.characters.toLocaleString()} characters</span>
+        <span className="docs-statusbar__sep" aria-hidden="true" />
+        <span>
+          {pageCount} {pageCount === 1 ? 'page' : 'pages'}
+        </span>
+        <span className="docs-statusbar__muted">
+          {PAGE_SIZES[doc.settings.pageSize].label} · {doc.settings.orientation}
+        </span>
+        <span className="docs-statusbar__spacer" />
+        {!canEdit && <span className="docs-statusbar__muted">You can view and print this document</span>}
+        <span className="docs-statusbar__muted">{Math.round(zoom * 100)}%</span>
+      </footer>
+
       {fileInput}
 
       {shareOpen && (
         <ShareDialog documentId={doc.id} documentTitle={doc.title} owner={doc.owner} onClose={() => setShareOpen(false)} />
+      )}
+      {confirmDeleteOpen && (
+        <ConfirmDialog
+          danger
+          title="Delete document?"
+          message={`“${doc.title}” will be permanently deleted and everyone it's shared with will lose access. This can't be undone.`}
+          confirmLabel="Delete"
+          onConfirm={performDelete}
+          onClose={() => setConfirmDeleteOpen(false)}
+        />
       )}
       {pageSetupOpen && (
         <PageSetupDialog settings={doc.settings} onApply={saveSettings} onClose={() => setPageSetupOpen(false)} />

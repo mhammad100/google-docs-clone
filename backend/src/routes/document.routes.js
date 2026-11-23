@@ -18,6 +18,9 @@ router.get('/:id', v.idRules, validate, documentController.getOne);
 router.patch('/:id', v.updateRules, validate, documentController.update);
 router.delete('/:id', v.idRules, validate, documentController.remove);
 
+// Export
+router.get('/:id/export/pdf', v.idRules, validate, documentController.exportPdf);
+
 // Sharing
 router.get('/:id/shares', v.idRules, validate, shareController.list);
 router.post('/:id/shares', v.shareRules, validate, shareController.upsert);

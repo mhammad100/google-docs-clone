@@ -1,5 +1,8 @@
 // Page setup stored per document. Sizes are in inches.
-const PAGE_SIZES = ['letter', 'a4', 'legal', 'a5'];
+
+// Portrait width/height
+const PAGE_DIMENSIONS = { letter: [8.5, 11], a4: [8.27, 11.69], legal: [8.5, 14], a5: [5.83, 8.27] };
+const PAGE_SIZES = Object.keys(PAGE_DIMENSIONS);
 const ORIENTATIONS = ['portrait', 'landscape'];
 const MARGIN_KEYS = ['top', 'right', 'bottom', 'left'];
 const MAX_MARGIN = 3;
@@ -34,8 +37,15 @@ const normalizeSettings = (settings = {}) => {
   };
 };
 
+/** [width, height] in inches after applying orientation. */
+const pageDimensions = ({ pageSize, orientation }) => {
+  const [w, h] = PAGE_DIMENSIONS[pageSize] || PAGE_DIMENSIONS[DEFAULT_SETTINGS.pageSize];
+  return orientation === 'landscape' ? [h, w] : [w, h];
+};
+
 module.exports = {
   PAGE_SIZES,
+  pageDimensions,
   ORIENTATIONS,
   MARGIN_KEYS,
   MAX_MARGIN,

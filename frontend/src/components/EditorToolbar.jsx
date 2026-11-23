@@ -11,7 +11,7 @@ const ToolButton = ({ icon, label, shortcut, active, disabled, onClick }) => (
   <button
     type="button"
     className={`tb-btn${active ? ' is-active' : ''}`}
-    title={shortcut ? `${label} (${shortcut})` : label}
+    data-tooltip={shortcut ? `${label} (${shortcut})` : label}
     aria-label={label}
     aria-pressed={active ?? undefined}
     disabled={disabled}
@@ -122,7 +122,8 @@ const LinkControl = ({ holderRef, disabled, active, onChanged }) => {
     <Dropdown
       label={<Icon name="link" />}
       caret={false}
-      title={`Insert link (${SHORTCUTS.link})`}
+      tooltip={`Insert link (${SHORTCUTS.link})`}
+      ariaLabel="Insert link"
       buttonClassName={`tb-btn${active ? ' is-active' : ''}`}
       disabled={disabled}
       onOpen={open}
@@ -144,7 +145,7 @@ const EditorToolbar = ({ state, commands, canEdit, holderRef, zoom, onZoomChange
       <ToolButton icon="print" label="Print" shortcut={SHORTCUTS.print} onClick={onPrint} />
       <Separator />
 
-      <Dropdown label={`${Math.round(zoom * 100)}%`} title="Zoom" buttonClassName="tb-select tb-select--zoom">
+      <Dropdown label={`${Math.round(zoom * 100)}%`} tooltip="Zoom" buttonClassName="tb-select tb-select--zoom">
         {(close) =>
           ZOOM_LEVELS.map((level) => (
             <MenuItem key={level} label={`${level * 100}%`} active={level === zoom} close={close} onSelect={() => onZoomChange(level)} />
@@ -153,7 +154,7 @@ const EditorToolbar = ({ state, commands, canEdit, holderRef, zoom, onZoomChange
       </Dropdown>
       <Separator />
 
-      <Dropdown label={styleLabel} title="Text style" buttonClassName="tb-select tb-select--style" disabled={off}>
+      <Dropdown label={styleLabel} tooltip="Text style" buttonClassName="tb-select tb-select--style" disabled={off}>
         {(close) =>
           TEXT_STYLES.map((style) => (
             <MenuItem

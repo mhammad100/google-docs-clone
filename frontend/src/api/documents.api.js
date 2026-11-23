@@ -23,3 +23,7 @@ export const getShares = (id) => asyncCatcher(() => client.get(`/documents/${id}
 export const shareDocument = (id, payload) => asyncCatcher(() => client.post(`/documents/${id}/shares`, payload));
 
 export const unshareDocument = (id, userId) => asyncCatcher(() => client.delete(`/documents/${id}/shares/${userId}`));
+
+// Export: resolves with data = { blob, filename }
+export const exportDocumentPdf = (id) =>
+  asyncCatcher(() => client.get(`/documents/${id}/export/pdf`, { responseType: 'blob', timeout: 60000 }));

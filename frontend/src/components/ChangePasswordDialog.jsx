@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { changePassword } from '../api/auth.api';
 import { showToast } from '../store/toastSlice';
+import Icon from './Icon';
+import Modal from './Modal';
 import './ChangePasswordDialog.scss';
 
 const EMPTY = { currentPassword: '', newPassword: '', confirmPassword: '' };
@@ -17,10 +19,33 @@ const validate = (form) => {
 };
 
 const FIELDS = [
-  ['currentPassword', 'Current password', 'current-password'],
-  ['newPassword', 'New password', 'new-password'],
-  ['confirmPassword', 'Confirm new password', 'new-password'],
+  { name: 'currentPassword', label: 'Current password', autoComplete: 'current-password' },
+  { name: 'newPassword', label: 'New password', autoComplete: 'new-password', hint: `At least ${MIN_LENGTH} characters` },
+  { name: 'confirmPassword', label: 'Confirm new password', autoComplete: 'new-password' },
 ];
+
+/** Password input with a show/hide toggle. */
+const PasswordField = ({ label, hint, error, autoFocus, ...inputProps }) => {
+  const [visible, setVisible] = useState(false);
+  return (
+    <label className="field">
+      <span className="field__label">{label}</span>
+      <span className={`password-input${error ? ' password-input--error' : ''}`}>
+        <input type={visible ? 'text' : 'password'} aria-invalid={Boolean(error)} data-autofocus={autoFocus || undefined} {...inputProps} />
+        <button
+          type="button"
+          className="icon-btn password-input__toggle"
+          onClick={() => setVisible((v) => !v)}
+          aria-label={visible ? 'Hide password' : 'Show password'}
+          title={visible ? 'Hide password' : 'Show password'}
+        >
+          <Icon name={visible ? 'eyeOff' : 'eye'} size={18} />
+        </button>
+      </span>
+      {error ? <span className="field-error">{error}</span> : hint && <span className="field-hint">{hint}</span>}
+    </label>
+  );
+};
 
 const ChangePasswordDialog = ({ onClose }) => {
   const dispatch = useDispatch();
@@ -29,20 +54,13 @@ const ChangePasswordDialog = ({ onClose }) => {
   const [formError, setFormError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    const onKey = (e) => e.key === 'Escape' && onClose();
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
-
   const update = (field) => (e) => {
     setForm((f) => ({ ...f, [field]: e.target.value }));
     setErrors((errs) => ({ ...errs, [field]: undefined }));
     setFormError('');
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     const clientErrors = validate(form);
     if (Object.keys(clientErrors).length) {
       setErrors(clientErrors);
@@ -66,47 +84,45 @@ const ChangePasswordDialog = ({ onClose }) => {
   };
 
   return (
-    <div className="dialog-backdrop" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
-      <form
-        className="dialog change-password"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="change-password-title"
-        onSubmit={handleSubmit}
-        noValidate
-      >
-        <h2 id="change-password-title" className="dialog__title">Change password</h2>
-
-        <div className="change-password__fields">
-          {FIELDS.map(([field, label, autoComplete], i) => (
-            <label key={field} className="field">
-              <span className="field__label">{label}</span>
-              <input
-                className={`input${errors[field] ? ' input--error' : ''}`}
-                type="password"
-                autoComplete={autoComplete}
-                value={form[field]}
-                onChange={update(field)}
-                autoFocus={i === 0}
-              />
-              {errors[field] && <span className="field-error">{errors[field]}</span>}
-            </label>
-          ))}
-          <p className="change-password__hint">Use at least {MIN_LENGTH} characters.</p>
-        </div>
-
-        {formError && <p className="form-error">{formError}</p>}
-
-        <div className="dialog__footer">
-          <button type="button" className="btn btn--secondary" onClick={onClose}>
+    <Modal
+      title="Change password"
+      description="You'll stay signed in on this device."
+      icon="key"
+      size="sm"
+      busy={submitting}
+      onClose={onClose}
+      onSubmit={handleSubmit}
+      footer={
+        <>
+          <button type="button" className="btn btn--secondary" onClick={onClose} disabled={submitting}>
             Cancel
           </button>
           <button type="submit" className="btn btn--primary" disabled={submitting}>
             {submitting ? 'Saving…' : 'Update password'}
           </button>
-        </div>
-      </form>
-    </div>
+        </>
+      }
+    >
+      <div className="change-password">
+        {FIELDS.map((field, i) => (
+          <PasswordField
+            key={field.name}
+            label={field.label}
+            hint={field.hint}
+            autoComplete={field.autoComplete}
+            value={form[field.name]}
+            onChange={update(field.name)}
+            error={errors[field.name]}
+            autoFocus={i === 0}
+          />
+        ))}
+        {formError && (
+          <p className="form-error" role="alert">
+            {formError}
+          </p>
+        )}
+      </div>
+    </Modal>
   );
 };
 

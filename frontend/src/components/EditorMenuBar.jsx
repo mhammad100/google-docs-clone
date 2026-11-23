@@ -22,11 +22,12 @@ const EditorMenuBar = ({ commands, state, canEdit, isOwner, settings, actions })
           {isOwner && <MenuItem icon="share" label="Share…" close={close} onSelect={actions.share} />}
           <MenuDivider />
           <MenuItem icon="pageSetup" label="Page setup…" disabled={off} close={close} onSelect={actions.pageSetup} />
-          <MenuItem icon="print" label="Print / Save as PDF" shortcut={SHORTCUTS.print} close={close} onSelect={actions.print} />
+          <MenuItem icon="pdf" label="Download as PDF" close={close} onSelect={actions.downloadPdf} />
+          <MenuItem icon="print" label="Print" shortcut={SHORTCUTS.print} close={close} onSelect={actions.print} />
           {isOwner && (
             <>
               <MenuDivider />
-              <MenuItem icon="delete" label="Delete document" close={close} onSelect={actions.deleteDocument} />
+              <MenuItem icon="delete" label="Delete document" className="menu-item--danger" close={close} onSelect={actions.deleteDocument} />
             </>
           )}
         </>

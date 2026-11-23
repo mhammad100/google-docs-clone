@@ -6,7 +6,7 @@ import Icon from './Icon';
 import { ROLE_LABELS, formatEditedAt, timeAgo } from '../utils/format';
 
 /** One row of the documents table: name, owner, last edited and a ⋮ actions menu. */
-const DocumentRow = ({ doc, onDelete }) => {
+const DocumentRow = ({ doc, onDelete, onDownloadPdf }) => {
   const me = useSelector((s) => s.auth.user);
   const isOwner = doc.role === 'owner';
   const owner = isOwner ? me : doc.owner;
@@ -56,6 +56,7 @@ const DocumentRow = ({ doc, onDelete }) => {
         {(close) => (
           <>
             <MenuItem icon="openNew" label="Open in new tab" close={close} onSelect={() => window.open(href, '_blank', 'noopener')} />
+            <MenuItem icon="pdf" label="Download as PDF" close={close} onSelect={() => onDownloadPdf(doc)} />
             {isOwner && (
               <>
                 <MenuDivider />

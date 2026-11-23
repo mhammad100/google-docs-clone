@@ -9,7 +9,8 @@ const { errorHandler, notFoundHandler } = require('./middlewares/errorHandler');
 const app = express();
 
 app.use(helmet());
-app.use(cors({ origin: env.corsOrigins }));
+// Content-Disposition is exposed so the frontend can read the download file name
+app.use(cors({ origin: env.corsOrigins, exposedHeaders: ['Content-Disposition'] }));
 app.use(express.json({ limit: '2mb' }));
 if (env.nodeEnv !== 'test') app.use(morgan('dev'));
 

@@ -30,6 +30,7 @@ A full-stack document editor: create, rename, format and autosave documents, imp
   - Viewers get a read-only editor.
   - Users without access get a 404, so document ids don't leak.
 - **Viewers** get the same layout with editing controls disabled; only print and zoom stay active.
+- **Export to PDF:** File → *Download as PDF* in the editor, or ⋮ → *Download as PDF* on the dashboard. The PDF is generated on the server and follows the document's page setup: paper size, orientation, margins, header and footer on every page, and "Page X of Y" numbers. Text stays selectable and links stay clickable. Anyone with access, viewers included, can export. Any unsaved edits are saved first.
 - **Account menu:** click your avatar (top right, on the dashboard and in the editor) to change your password or log out. Changing a password requires the current one.
 - **Auth:** email + password with JWT. You can register a new account or use the seeded demo accounts.
 
@@ -73,13 +74,14 @@ npm run dev                     # http://localhost:5173
 cd backend
 cp .env.test.example .env.test  # points at a separate database, which the tests wipe
 createdb docs_test
-npm test                        # migrations run automatically; 20 tests
+npm test                        # migrations run automatically; 29 tests
 npm run test:unit               # import/sanitizer tests only, no database needed
 ```
 
 The API tests cover:
 - the response envelope and validation errors
 - page settings: round-trip, plus rejection of margins too large for the paper
+- PDF export: inline formatting → PDF text runs, page geometry, header/footer/page numbers, multi-page output, and who can download
 - create → rename → save → reopen, with formatting preserved
 - markdown upload and rejection of unsupported files
 - owned vs shared lists
@@ -107,6 +109,7 @@ On failure, `data` is `null` and `error` is `{ "code": "BAD_REQUEST", "details":
 | GET | `/documents/:id` | owner / editor / viewer | Document with `content`, `role` and `owner` |
 | PATCH | `/documents/:id` | owner / editor | Update `title`, `content` and/or `settings` (page setup) |
 | DELETE | `/documents/:id` | owner | Delete the document and its shares |
+| GET | `/documents/:id/export/pdf` | owner / editor / viewer | Download the document as a PDF (binary response; errors still use the JSON envelope) |
 | GET | `/documents/:id/shares` | owner / editor / viewer | People with access |
 | POST | `/documents/:id/shares` | owner | Grant or update access: `{ email, permission: "view" \| "edit" }` |
 | DELETE | `/documents/:id/shares/:userId` | owner | Revoke access |
@@ -154,17 +157,23 @@ if (res.error) {
 Both apps deploy to Vercel as two projects from this repository. The database is any hosted Postgres, such as Neon, Supabase or Vercel Postgres.
 
 1. **Database:** create a Postgres database and copy its connection string.
-2. **Backend project** (root directory: `backend`):
-   - Set these environment variables:
-     - `DATABASE_URL`
+2. **Backend project:** import the repo in Vercel, set **Root Directory** to `backend`, and keep the framework preset as **Other**. No build command or output directory is needed.
+   - **Environment variables:**
+     - `DATABASE_URL`: use the **pooled** connection string if your provider has one (e.g. Neon's `-pooler` host)
      - `DATABASE_SSL=true`
      - `JWT_SECRET` (a long random string)
-     - `CORS_ORIGIN=https://<your-frontend-domain>`
-   - `vercel.json` routes every request to `api/index.js`.
-   - Run migrations and seeds once from your machine against the production database:
+     - `CORS_ORIGIN=https://<your-frontend-domain>` (comma-separate several origins)
+   - **How it runs:**
+     - `vercel.json` sends every request to `api/index.js`, which exports the Express app as one serverless function.
+     - Node is pinned to `22.x` in `package.json`.
+   - **Database setup:** run migrations and seeds once from your machine against the production database. Re-run `npm run migrate` after pulling new migrations.
      ```bash
      cd backend && DATABASE_URL=... DATABASE_SSL=true JWT_SECRET=x npm run db:setup
      ```
+   - **Smoke test after deploying:** `https://<your-backend-domain>/api/health` should return `{"data":{"ok":true},...}`.
+   - **Keep the API loadable on Vercel:** Vercel's Node runtime can't `require()` ES-module-only packages, but local Node 22.12+/24 can. That gap hides crashes like `ERR_REQUIRE_ESM` until deploy.
+     - `npm run verify:serverless` (also part of `npm test`) loads the whole API with that feature switched off.
+     - `sanitize-html` (2.17.0), `pdfmake` (0.2.23) and `marked` (15) are pinned to exact versions on purpose: newer versions depend on ESM-only packages. Upgrade them only if this check still passes.
 3. **Frontend project** (root directory: `frontend`, framework: Vite):
    - Set `VITE_API_URL=https://<your-backend-domain>/api`.
    - `vercel.json` rewrites all routes to `index.html` so deep links work.

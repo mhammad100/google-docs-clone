@@ -1,56 +1,128 @@
 @use '../styles/variables' as *;
 
-.share-form {
+.share-invite {
   display: flex;
   gap: 8px;
 
-  &__select {
-    width: auto;
+  &__role {
+    width: 116px;
+    flex-shrink: 0;
+  }
+
+  &__submit {
+    height: 38px;
     flex-shrink: 0;
   }
 
   @include mobile {
     flex-wrap: wrap;
+
+    .input-icon {
+      flex-basis: 100%;
+    }
+
+    &__role {
+      flex: 1;
+    }
   }
+}
+
+.share-people {
+  margin-top: 22px;
 }
 
 .share-list {
   list-style: none;
   margin: 0;
   padding: 0;
+}
 
-  &__item {
+.share-person {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  padding: 6px 0;
+
+  &.is-busy {
+    opacity: 0.55;
+  }
+
+  &__info {
+    flex: 1;
+    min-width: 0;
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 10px 0;
-    border-bottom: 1px solid $color-border;
-
-    &:last-child {
-      border-bottom: none;
-    }
+    flex-direction: column;
   }
 
   &__name {
-    font-weight: 500;
     font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   &__email {
-    color: $color-muted;
     font-size: 13px;
-  }
-
-  &__actions {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-
-  &__empty {
-    padding: 10px 0;
     color: $color-muted;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__role {
+    padding-right: 10px;
     font-size: 14px;
+    color: $color-muted;
+  }
+
+  &--loading {
+    .skeleton--avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+    }
+
+    .skeleton--text {
+      width: 180px;
+      height: 12px;
+    }
+  }
+}
+
+.share-empty {
+  margin: 4px 0 0 48px;
+  font-size: 13px;
+  color: $color-muted;
+}
+
+.share-access {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 10px;
+  background: #f6f8fc;
+
+  &__icon {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #e3e7ec;
+    color: #444746;
+  }
+
+  &__title {
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  &__text {
+    font-size: 13px;
+    color: $color-muted;
   }
 }

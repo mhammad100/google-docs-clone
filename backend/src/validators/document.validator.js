@@ -6,11 +6,10 @@ const {
   MARGIN_KEYS,
   MAX_MARGIN,
   MAX_HEADER_LENGTH,
+  pageDimensions,
 } = require('../services/settings.service');
 
-// Page width/height in inches (portrait), used to check margins leave room for text
-const PAGE_DIMENSIONS = { letter: [8.5, 11], a4: [8.27, 11.69], legal: [8.5, 14], a5: [5.83, 8.27] };
-const MIN_TEXT_AREA = 1; // inch
+const MIN_TEXT_AREA = 1; // inch left for text after margins
 
 const MAX_BLOCKS = 5000;
 
@@ -62,8 +61,7 @@ const settings = [
   body('settings.showPageNumbers').optional().isBoolean({ strict: true }).withMessage('showPageNumbers must be true or false'),
   body('settings').optional().custom((value) => {
     if (!value || typeof value !== 'object') return true; // reported by isObject() above
-    const [w, h] = PAGE_DIMENSIONS[value.pageSize] || PAGE_DIMENSIONS.a4;
-    const [width, height] = value.orientation === 'landscape' ? [h, w] : [w, h];
+    const [width, height] = pageDimensions(value);
     const m = value.margins || {};
     const num = (k) => Number(m[k] ?? 1);
     if (width - num('left') - num('right') < MIN_TEXT_AREA || height - num('top') - num('bottom') < MIN_TEXT_AREA) {

@@ -1,46 +1,24 @@
 @use '../styles/variables' as *;
 
 .page-setup {
-  width: min(620px, 100%);
+  display: flex;
+  gap: 28px;
 
-  &__body {
-    display: flex;
-    gap: 24px;
-
-    @include mobile {
-      flex-direction: column-reverse;
-    }
+  @include mobile {
+    flex-direction: column-reverse;
+    gap: 16px;
   }
 
   &__fields {
     flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  &__group {
-    border: none;
-    margin: 0;
-    padding: 0;
-
-    legend {
-      font-size: 13px;
-      font-weight: 600;
-      margin-bottom: 8px;
-      padding: 0;
-    }
-
-    & + & {
-      margin-top: 16px;
-    }
+    min-width: 0;
   }
 
   &__presets {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
   }
 
   &__margins {
@@ -53,30 +31,46 @@
     }
   }
 
+  &__preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 200px;
+    flex-shrink: 0;
+    padding: 20px 0;
+    border-radius: 12px;
+    background: #f6f8fc;
+
+    @include mobile {
+      width: 100%;
+    }
+  }
+
+  &__preview-label {
+    font-size: 12px;
+    color: $color-muted;
+  }
+
   &__hf {
+    margin-top: 22px;
+    padding-top: 20px;
+    border-top: 1px solid #eef0f3;
+  }
+
+  &__hf-fields {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    margin-bottom: 10px;
+    gap: 10px;
+    margin-bottom: 14px;
 
     @include mobile {
       grid-template-columns: 1fr;
     }
   }
 
-  &__preview {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    min-width: 160px;
-    color: $color-muted;
-    font-size: 12px;
-    text-transform: capitalize;
-  }
-
-  .form-error {
+  &__error {
     margin-top: 16px;
   }
 }
@@ -84,35 +78,52 @@
 .page-preview {
   position: relative;
   background: $color-surface;
-  border: 1px solid $color-border;
-  box-shadow: $shadow-sm;
+  border-radius: 2px;
+  box-shadow: 0 1px 3px rgba(60, 64, 67, 0.2), 0 4px 12px rgba(60, 64, 67, 0.08);
   transition: width 0.2s, height 0.2s;
 
   &__text {
     position: absolute;
-    background: repeating-linear-gradient(to bottom, #dadce0 0 2px, transparent 2px 7px);
+    background: repeating-linear-gradient(to bottom, #d2e3fc 0 3px, transparent 3px 8px);
+    border-radius: 1px;
     transition: all 0.2s;
+  }
+
+  &__hf {
+    position: absolute;
+    width: 30%;
+    height: 3px;
+    border-radius: 2px;
+    background: #9aa0a6;
   }
 }
 
-.radio,
-.checkbox {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-right: 16px;
-  font-size: 14px;
-  cursor: pointer;
+// Tiny page icons used in the orientation option cards
+.orientation-glyph {
+  flex-shrink: 0;
+  border: 1.5px solid currentColor;
+  border-radius: 2px;
+
+  &--portrait {
+    width: 14px;
+    height: 18px;
+  }
+
+  &--landscape {
+    width: 18px;
+    height: 14px;
+  }
 }
 
 .chip {
-  height: 28px;
-  padding: 0 12px;
+  height: 30px;
+  padding: 0 14px;
   border: 1px solid $color-border;
   border-radius: 999px;
   background: $color-surface;
   font: inherit;
   font-size: 13px;
+  color: #444746;
   cursor: pointer;
 
   &:hover {
@@ -123,5 +134,10 @@
     border-color: $color-primary;
     background: $color-primary-soft;
     color: $color-primary-dark;
+    font-weight: 500;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $color-primary;
   }
 }

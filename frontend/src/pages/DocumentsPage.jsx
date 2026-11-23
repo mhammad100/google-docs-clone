@@ -5,6 +5,7 @@ import { createDocument, deleteDocument, getDocuments } from '../api/documents.a
 import { addOwnedDocument, removeDocument, setDocuments } from '../store/documentsSlice';
 import { showToast } from '../store/toastSlice';
 import { useFileImport } from '../hooks/useFileImport';
+import { usePdfExport } from '../hooks/usePdfExport';
 import ConfirmDialog from '../components/ConfirmDialog';
 import DocumentRow from '../components/DocumentRow';
 import Dropdown, { MenuItem } from '../components/Dropdown';
@@ -12,9 +13,9 @@ import Icon from '../components/Icon';
 import './DocumentsPage.scss';
 
 const TABS = [
-  { value: 'all', label: 'All documents' },
-  { value: 'owned', label: 'Owned by me' },
-  { value: 'shared', label: 'Shared with me' },
+  { value: 'all', label: 'All documents', short: 'All' },
+  { value: 'owned', label: 'Owned by me', short: 'Mine' },
+  { value: 'shared', label: 'Shared with me', short: 'Shared' },
 ];
 
 const SORTS = {
@@ -46,6 +47,7 @@ const DocumentsPage = () => {
   const { owned, shared, loaded } = useSelector((s) => s.documents);
   const user = useSelector((s) => s.auth.user);
   const { openPicker, uploading, fileInput } = useFileImport();
+  const { exportPdf } = usePdfExport();
 
   const [loadError, setLoadError] = useState('');
   const [creating, setCreating] = useState(false);
@@ -131,7 +133,7 @@ const DocumentsPage = () => {
                 <span className="template__formats">.txt · .md</span>
               </span>
               <span className="template__label">{uploading ? 'Importing…' : 'Import a file'}</span>
-              <span className="template__hint">Up to 1 MB · formatting kept</span>
+              <span className="template__hint">Up to 1 MB</span>
             </button>
           </div>
         </div>
@@ -150,7 +152,8 @@ const DocumentsPage = () => {
                 className={`tabs__tab${tab === t.value ? ' is-active' : ''}`}
                 onClick={() => setTab(t.value)}
               >
-                {t.label}
+                <span className="tabs__label">{t.label}</span>
+                <span className="tabs__label tabs__label--short">{t.short}</span>
                 {loaded && <span className="tabs__count">{counts[t.value]}</span>}
               </button>
             ))}
@@ -208,7 +211,7 @@ const DocumentsPage = () => {
             {loaded && visible.length > 0 && (
               <ul className="doc-table__body">
                 {visible.map((doc) => (
-                  <DocumentRow key={doc.id} doc={doc} onDelete={setPendingDelete} />
+                  <DocumentRow key={doc.id} doc={doc} onDelete={setPendingDelete} onDownloadPdf={(d) => exportPdf(d.id)} />
                 ))}
               </ul>
             )}

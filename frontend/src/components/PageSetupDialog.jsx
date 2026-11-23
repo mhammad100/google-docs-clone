@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { MARGIN_PRESETS, MAX_MARGIN, PAGE_SIZES, pageDimensions, validateSettings } from '../editor/pageSettings';
+import Modal from './Modal';
 import './PageSetupDialog.scss';
 
 const MARGIN_FIELDS = [
@@ -9,16 +10,24 @@ const MARGIN_FIELDS = [
   ['right', 'Right'],
 ];
 
-const sameMargins = (a, b) => MARGIN_FIELDS.every(([k]) => Number(a[k]) === b[k]);
+const ORIENTATIONS = [
+  { value: 'portrait', label: 'Portrait' },
+  { value: 'landscape', label: 'Landscape' },
+];
 
-/** Scaled page thumbnail showing the text area inside the margins. */
+const sameMargins = (a, b) => MARGIN_FIELDS.every(([k]) => Number(a[k]) === b[k]);
+const num = (v) => (Number.isFinite(Number(v)) ? Number(v) : 0);
+
+/** Scaled page thumbnail showing the header, text area and footer inside the margins. */
 const PagePreview = ({ settings }) => {
   const [w, h] = pageDimensions(settings);
-  const scale = 140 / Math.max(w, h);
+  const scale = 150 / Math.max(w, h);
   const m = settings.margins;
-  const num = (v) => (Number.isFinite(Number(v)) ? Number(v) : 0);
   return (
     <div className="page-preview" style={{ width: w * scale, height: h * scale }} aria-hidden="true">
+      {settings.header.trim() && (
+        <span className="page-preview__hf" style={{ top: Math.max(num(m.top) * scale - 9, 2), left: num(m.left) * scale }} />
+      )}
       <div
         className="page-preview__text"
         style={{
@@ -28,6 +37,9 @@ const PagePreview = ({ settings }) => {
           right: num(m.right) * scale,
         }}
       />
+      {(settings.footer.trim() || settings.showPageNumbers) && (
+        <span className="page-preview__hf" style={{ bottom: Math.max(num(m.bottom) * scale - 9, 2), left: num(m.left) * scale }} />
+      )}
     </div>
   );
 };
@@ -36,12 +48,6 @@ const PageSetupDialog = ({ settings, onApply, onClose }) => {
   const [draft, setDraft] = useState(settings);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    const onKey = (e) => e.key === 'Escape' && onClose();
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
-
   const update = (patch) => {
     setDraft((d) => ({ ...d, ...patch }));
     setError('');
@@ -49,8 +55,7 @@ const PageSetupDialog = ({ settings, onApply, onClose }) => {
 
   const setMargin = (key, value) => update({ margins: { ...draft.margins, [key]: value } });
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = () => {
     const next = {
       ...draft,
       header: draft.header.trim(),
@@ -66,99 +71,125 @@ const PageSetupDialog = ({ settings, onApply, onClose }) => {
     onClose();
   };
 
-  return (
-    <div className="dialog-backdrop" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
-      <form className="dialog page-setup" role="dialog" aria-modal="true" aria-labelledby="page-setup-title" onSubmit={handleSubmit} noValidate>
-        <h2 id="page-setup-title" className="dialog__title">Page setup</h2>
+  const [w, h] = pageDimensions(draft);
 
-        <div className="page-setup__body">
-          <div className="page-setup__fields">
-            <fieldset className="page-setup__group">
-              <legend>Orientation</legend>
-              {['portrait', 'landscape'].map((o) => (
-                <label key={o} className="radio">
-                  <input type="radio" name="orientation" checked={draft.orientation === o} onChange={() => update({ orientation: o })} />
-                  {o[0].toUpperCase() + o.slice(1)}
+  return (
+    <Modal
+      title="Page setup"
+      description="Applies to this document on screen and when printing or saving as PDF."
+      size="lg"
+      onClose={onClose}
+      onSubmit={handleSubmit}
+      footer={
+        <>
+          <button type="button" className="btn btn--secondary" onClick={onClose}>
+            Cancel
+          </button>
+          <button type="submit" className="btn btn--primary">
+            Apply
+          </button>
+        </>
+      }
+    >
+      <div className="page-setup">
+        <div className="page-setup__fields">
+          <section className="modal-section">
+            <h3 className="modal-section__title">Orientation</h3>
+            <div className="option-cards" role="radiogroup" aria-label="Orientation">
+              {ORIENTATIONS.map((o) => (
+                <label key={o.value} className={`option-card${draft.orientation === o.value ? ' is-selected' : ''}`}>
+                  <input
+                    type="radio"
+                    name="orientation"
+                    value={o.value}
+                    checked={draft.orientation === o.value}
+                    onChange={() => update({ orientation: o.value })}
+                  />
+                  <span className={`orientation-glyph orientation-glyph--${o.value}`} aria-hidden="true" />
+                  {o.label}
                 </label>
               ))}
-            </fieldset>
+            </div>
+          </section>
 
-            <label className="field">
-              <span className="field__label">Paper size</span>
-              <select className="input" value={draft.pageSize} onChange={(e) => update({ pageSize: e.target.value })}>
-                {Object.entries(PAGE_SIZES).map(([key, size]) => (
-                  <option key={key} value={key}>
-                    {size.label} ({size.hint})
-                  </option>
-                ))}
-              </select>
-            </label>
+          <section className="modal-section">
+            <h3 className="modal-section__title">Paper size</h3>
+            <select className="input" value={draft.pageSize} onChange={(e) => update({ pageSize: e.target.value })} aria-label="Paper size">
+              {Object.entries(PAGE_SIZES).map(([key, size]) => (
+                <option key={key} value={key}>
+                  {size.label} ({size.hint})
+                </option>
+              ))}
+            </select>
+          </section>
 
-            <fieldset className="page-setup__group">
-              <legend>Margins (inches)</legend>
-              <div className="page-setup__presets">
-                {Object.entries(MARGIN_PRESETS).map(([key, preset]) => (
-                  <button
-                    key={key}
-                    type="button"
-                    className={`chip${sameMargins(draft.margins, preset.margins) ? ' is-active' : ''}`}
-                    onClick={() => update({ margins: preset.margins })}
-                  >
-                    {preset.label}
-                  </button>
-                ))}
-              </div>
-              <div className="page-setup__margins">
-                {MARGIN_FIELDS.map(([key, label]) => (
-                  <label key={key} className="field">
-                    <span className="field__label">{label}</span>
-                    <input
-                      className="input"
-                      type="number"
-                      min="0"
-                      max={MAX_MARGIN}
-                      step="0.1"
-                      value={draft.margins[key]}
-                      onChange={(e) => setMargin(key, e.target.value)}
-                    />
-                  </label>
-                ))}
-              </div>
-            </fieldset>
-          </div>
-
-          <div className="page-setup__preview">
-            <PagePreview settings={draft} />
-            <span>{PAGE_SIZES[draft.pageSize].label} · {draft.orientation}</span>
-          </div>
+          <section className="modal-section">
+            <h3 className="modal-section__title">Margins</h3>
+            <div className="page-setup__presets" role="group" aria-label="Margin presets">
+              {Object.entries(MARGIN_PRESETS).map(([key, preset]) => (
+                <button
+                  key={key}
+                  type="button"
+                  className={`chip${sameMargins(draft.margins, preset.margins) ? ' is-active' : ''}`}
+                  aria-pressed={sameMargins(draft.margins, preset.margins)}
+                  onClick={() => update({ margins: preset.margins })}
+                >
+                  {preset.label}
+                </button>
+              ))}
+            </div>
+            <div className="page-setup__margins">
+              {MARGIN_FIELDS.map(([key, label]) => (
+                <label key={key} className="field">
+                  <span className="field__label">{label}</span>
+                  <span className="input-affix">
+                    <input type="number" min="0" max={MAX_MARGIN} step="0.1" value={draft.margins[key]} onChange={(e) => setMargin(key, e.target.value)} />
+                    <span className="input-affix__suffix">in</span>
+                  </span>
+                </label>
+              ))}
+            </div>
+          </section>
         </div>
 
-        <fieldset className="page-setup__group">
-          <legend>Header &amp; footer</legend>
-          <div className="page-setup__hf">
-            <label className="field">
-              <span className="field__label">Header text</span>
-              <input className="input" maxLength={200} value={draft.header} onChange={(e) => update({ header: e.target.value })} placeholder="e.g. Company name" />
-            </label>
-            <label className="field">
-              <span className="field__label">Footer text</span>
-              <input className="input" maxLength={200} value={draft.footer} onChange={(e) => update({ footer: e.target.value })} placeholder="e.g. Confidential" />
-            </label>
-          </div>
-          <label className="checkbox">
-            <input type="checkbox" checked={draft.showPageNumbers} onChange={(e) => update({ showPageNumbers: e.target.checked })} />
-            Show page numbers in the footer
+        <aside className="page-setup__preview">
+          <PagePreview settings={draft} />
+          <span className="page-setup__preview-label">
+            {PAGE_SIZES[draft.pageSize].label} · {w}″ × {h}″
+          </span>
+        </aside>
+      </div>
+
+      <section className="modal-section page-setup__hf">
+        <h3 className="modal-section__title">Header &amp; footer</h3>
+        <div className="page-setup__hf-fields">
+          <label className="field">
+            <span className="field__label">Header</span>
+            <input className="input" maxLength={200} value={draft.header} onChange={(e) => update({ header: e.target.value })} placeholder="e.g. Company name" />
           </label>
-        </fieldset>
-
-        {error && <p className="form-error">{error}</p>}
-
-        <div className="dialog__footer">
-          <button type="button" className="btn btn--secondary" onClick={onClose}>Cancel</button>
-          <button type="submit" className="btn btn--primary">OK</button>
+          <label className="field">
+            <span className="field__label">Footer</span>
+            <input className="input" maxLength={200} value={draft.footer} onChange={(e) => update({ footer: e.target.value })} placeholder="e.g. Confidential" />
+          </label>
         </div>
-      </form>
-    </div>
+        <label className="switch">
+          <input
+            type="checkbox"
+            role="switch"
+            checked={draft.showPageNumbers}
+            onChange={(e) => update({ showPageNumbers: e.target.checked })}
+          />
+          <span className="switch__track" aria-hidden="true" />
+          Show page numbers in the footer
+        </label>
+      </section>
+
+      {error && (
+        <p className="form-error page-setup__error" role="alert">
+          {error}
+        </p>
+      )}
+    </Modal>
   );
 };
 
