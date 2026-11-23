@@ -46,7 +46,7 @@ All use the password `password123`. The login page has one-click buttons for eac
 
 ## Running locally
 
-**Requirements:** Node.js 20+ and PostgreSQL 13+ (uses the built-in `gen_random_uuid()`).
+**Requirements:** Node.js 22+ and PostgreSQL 13+ (uses the built-in `gen_random_uuid()`).
 
 ### 1. Backend
 
@@ -74,7 +74,7 @@ npm run dev                     # http://localhost:5173
 cd backend
 cp .env.test.example .env.test  # points at a separate database, which the tests wipe
 createdb docs_test
-npm test                        # migrations run automatically; 29 tests
+npm test                        # migrations run automatically; 30 tests
 npm run test:unit               # import/sanitizer tests only, no database needed
 ```
 

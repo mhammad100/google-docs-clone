@@ -1,0 +1,4 @@
+Walkthrough video: PASTE_VIDEO_URL_HERE
+
+Live app: https://google-docs-clone-8vn.pages.dev/login
+Demo accounts (password: password123): alice@example.com, bob@example.com, carol@example.com
